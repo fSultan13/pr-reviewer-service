@@ -1,0 +1,79 @@
+import logging
+import secrets
+from typing import Literal
+
+from pydantic import computed_field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
+from typing_extensions import Self
+
+logger = logging.getLogger("app")
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_ignore_empty=True,
+        extra="ignore",
+    )
+
+    API_V1_STR: str = "/api/v1"
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+
+    ENVIRONMENT: Literal["local", "develop", "production"] = "local"
+
+    BACKEND_HOST: str = "localhost"
+    BACKEND_PORT: int = 8080
+
+    PROJECT_NAME: str
+
+    POSTGRES_SERVER: str
+    POSTGRES_PORT: int = 5432
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
+
+    @computed_field
+    @property
+    def get_async_database_uri(self) -> URL:
+        return URL.create(
+            drivername="postgresql+asyncpg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_SERVER,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_DB,
+        )
+
+    @computed_field
+    @property
+    def get_database_uri(self) -> URL:
+        return URL.create(
+            drivername="postgresql",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_SERVER,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_DB,
+        )
+
+    def _check_default_secret(self, var_name: str, value: str | None) -> None:
+        if value == "none":
+            message = (
+                f'The value of {var_name} is "none", '
+                "for security, please change it, at least for deployments."
+            )
+            if self.ENVIRONMENT == "local":
+                logger.warning(message, stacklevel=1)
+            else:
+                raise ValueError(message)
+
+    @model_validator(mode="after")
+    def _enforce_non_default_secrets(self) -> Self:
+        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
+        self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
+
+        return self
+
+
+settings = Settings()
