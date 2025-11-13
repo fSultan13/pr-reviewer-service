@@ -17,4 +17,4 @@ migrate:
 	poetry run alembic upgrade head
 
 run:
-	poetry run uvicorn app.main:app --reload
+	poetry run uvicorn app.main:app --reload --port 8080

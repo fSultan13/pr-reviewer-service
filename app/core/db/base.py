@@ -1,8 +1,7 @@
 import typing as t
-import uuid
 from datetime import datetime
 
-from sqlalchemy import func, inspect, text
+from sqlalchemy import func, inspect
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 

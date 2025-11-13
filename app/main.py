@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
+from app.api.routers import api_router
 from app.core.config import settings
-from app.routers import api_router
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

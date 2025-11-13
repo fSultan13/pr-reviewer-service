@@ -1,6 +1,5 @@
 import logging
 import secrets
-from typing import Literal
 
 from pydantic import computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,8 +18,6 @@ class Settings(BaseSettings):
 
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
-
-    ENVIRONMENT: Literal["local", "develop", "production"] = "local"
 
     BACKEND_HOST: str = "localhost"
     BACKEND_PORT: int = 8080
@@ -63,10 +60,7 @@ class Settings(BaseSettings):
                 f'The value of {var_name} is "none", '
                 "for security, please change it, at least for deployments."
             )
-            if self.ENVIRONMENT == "local":
-                logger.warning(message, stacklevel=1)
-            else:
-                raise ValueError(message)
+            logger.warning(message, stacklevel=1)
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:

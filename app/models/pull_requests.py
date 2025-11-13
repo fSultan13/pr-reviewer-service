@@ -1,6 +1,5 @@
 # ruff: noqa: F821
 
-import uuid
 from datetime import datetime
 from enum import Enum
 
@@ -31,7 +30,6 @@ class PullRequest(Base):
         SAEnum(PRStatus, name="pr_status_enum"), default=PRStatus.OPEN, nullable=False
     )
     merged_at: Mapped[datetime | None]
-
 
     author: Mapped["User"] = relationship(back_populates="authored_prs")
     reviewers: Mapped[list["PRReviewer"]] = relationship(
