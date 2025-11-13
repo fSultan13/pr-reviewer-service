@@ -1,6 +1,6 @@
 from app.models import PullRequest, User
 from app.repositories import UserRepository
-from app.schemas import PullRequestShort, UserFull, UserReviewPRs
+from app.schemas import PullRequestShort, UserFull, UserReviewPRs, ReviewStats, UserReviewStat, PRReviewStat
 
 
 class UserService:
@@ -34,4 +34,27 @@ class UserService:
         return UserReviewPRs(
             user_id=user_id,
             pull_requests=[self._map_pr_model(pr) for pr in prs],
+        )
+
+    async def get_review_stats(self) -> ReviewStats:
+        """
+        Статистика назначений:
+        - по пользователям
+        - по PR.
+        """
+        by_user_raw = await self._repo.get_review_stats_by_user()
+        by_pr_raw = await self._repo.get_review_stats_by_pr()
+
+        return ReviewStats(
+            by_user=[
+                UserReviewStat(user_id=user_id, reviews_assigned=count)
+                for user_id, count in by_user_raw
+            ],
+            by_pull_request=[
+                PRReviewStat(
+                    pull_request_id=pr_id,
+                    reviewers_assigned=count,
+                )
+                for pr_id, count in by_pr_raw
+            ],
         )

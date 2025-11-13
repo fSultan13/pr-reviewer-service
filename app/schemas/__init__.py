@@ -1,6 +1,7 @@
 from app.schemas.pr_shema import PullRequestShort
 from app.schemas.team_shema import TeamMember, TeamWithMembers, TeamWithMembersGen
-from app.schemas.user_shema import SetIsActiveRequest, UserFull, UserGen, UserReviewPRs
+from app.schemas.user_shema import SetIsActiveRequest, UserFull, UserGen, UserReviewPRs, UserReviewStat, PRReviewStat, \
+    ReviewStats
 
 __all__ = [
     "TeamWithMembersGen",
@@ -11,4 +12,7 @@ __all__ = [
     "SetIsActiveRequest",
     "PullRequestShort",
     "UserReviewPRs",
+    "UserReviewStat",
+    "PRReviewStat",
+    "ReviewStats",
 ]

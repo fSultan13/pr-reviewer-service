@@ -22,3 +22,17 @@ class SetIsActiveRequest(BaseModel):
 class UserReviewPRs(BaseModel):
     user_id: str
     pull_requests: list[PullRequestShort]
+
+class UserReviewStat(BaseModel):
+    user_id: str
+    reviews_assigned: int
+
+
+class PRReviewStat(BaseModel):
+    pull_request_id: str
+    reviewers_assigned: int
+
+
+class ReviewStats(BaseModel):
+    by_user: list[UserReviewStat]
+    by_pull_request: list[PRReviewStat]
