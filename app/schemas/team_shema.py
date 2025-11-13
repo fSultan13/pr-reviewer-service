@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class TeamMemberIn(BaseModel):
+class TeamMember(BaseModel):
     user_id: str
     username: str
     is_active: bool
@@ -9,4 +9,4 @@ class TeamMemberIn(BaseModel):
 
 class TeamWithMembers(BaseModel):
     team_name: str
-    members: list[TeamMemberIn]
+    members: list[TeamMember]

@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
+    POSTGRES_SERVER_TEST: str
+    POSTGRES_PORT_TEST: int = 5432
+    POSTGRES_USER_TEST: str
+    POSTGRES_PASSWORD_TEST: str = ""
+    POSTGRES_DB_TEST: str = ""
+
     @computed_field
     @property
     def get_async_database_uri(self) -> URL:
@@ -40,6 +46,18 @@ class Settings(BaseSettings):
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             database=self.POSTGRES_DB,
+        )
+
+    @computed_field
+    @property
+    def get_async_database_test_uri(self) -> URL:
+        return URL.create(
+            drivername="postgresql+asyncpg",
+            username=self.POSTGRES_USER_TEST,
+            password=self.POSTGRES_PASSWORD_TEST,
+            host=self.POSTGRES_SERVER_TEST,
+            port=self.POSTGRES_PORT_TEST,
+            database=self.POSTGRES_DB_TEST,
         )
 
     @computed_field
