@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.api.deps import TeamServiceDep
 from app.core.exceptions import TeamAlreadyExistsError, TeamNotFoundError
-from app.schemas import TeamWithMembers
+from app.schemas import TeamWithMembers, TeamWithMembersGen
 
 router = APIRouter(tags=["Teams"])
 
@@ -10,7 +10,7 @@ router = APIRouter(tags=["Teams"])
 @router.post(
     "/team/add",
     status_code=status.HTTP_201_CREATED,
-    response_model=TeamWithMembers,
+    response_model=TeamWithMembersGen,
 )
 async def add_team(
     payload: TeamWithMembers,

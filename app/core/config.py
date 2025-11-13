@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    API_V1_STR: str = "/api/v1"
+    API_V1_STR: str = ""
     SECRET_KEY: str = secrets.token_urlsafe(32)
 
     BACKEND_HOST: str = "localhost"

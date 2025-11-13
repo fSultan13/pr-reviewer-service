@@ -35,7 +35,7 @@ class TeamRepository:
                 user.is_active = member_in.is_active
                 user.team_name = team_in.team_name
 
-        await self._session.flush()
+        await self._session.commit()
 
         return team
 

@@ -24,8 +24,9 @@ class TeamService:
     async def create_team_with_members(
         self, team_in: TeamWithMembers
     ) -> TeamWithMembers:
-        team_model = await self._repo.create_team_with_members(team_in)
-        return self._map_team_model(team_model)
+        team = await self._repo.create_team_with_members(team_in)
+        team = await self._repo.get_team_with_members(team.name)
+        return self._map_team_model(team)
 
     async def get_team_with_members(self, team_name: str) -> TeamWithMembers:
         team_model = await self._repo.get_team_with_members(team_name)
