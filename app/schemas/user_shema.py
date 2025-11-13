@@ -23,6 +23,7 @@ class UserReviewPRs(BaseModel):
     user_id: str
     pull_requests: list[PullRequestShort]
 
+
 class UserReviewStat(BaseModel):
     user_id: str
     reviews_assigned: int

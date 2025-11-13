@@ -1,6 +1,13 @@
 from app.models import PullRequest, User
 from app.repositories import UserRepository
-from app.schemas import PullRequestShort, UserFull, UserReviewPRs, ReviewStats, UserReviewStat, PRReviewStat
+from app.schemas import (
+    PRReviewStat,
+    PullRequestShort,
+    ReviewStats,
+    UserFull,
+    UserReviewPRs,
+    UserReviewStat,
+)
 
 
 class UserService:

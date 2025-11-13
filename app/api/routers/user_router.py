@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.api.deps import UserServiceDep
 from app.core.exceptions import NotFoundError
-from app.schemas import SetIsActiveRequest, UserGen, UserReviewPRs, ReviewStats
+from app.schemas import ReviewStats, SetIsActiveRequest, UserGen, UserReviewPRs
 
 router = APIRouter(tags=["Users"])
 
@@ -55,6 +55,7 @@ async def get_user_review_prs(
                 }
             },
         )
+
 
 @router.get(
     "/stats/review",
