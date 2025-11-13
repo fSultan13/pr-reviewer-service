@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.deps import TeamServiceDep
-from app.core.exceptions import TeamAlreadyExistsError, TeamNotFoundError
+from app.core.exceptions import NotFoundError, TeamAlreadyExistsError
 from app.schemas import TeamWithMembers, TeamWithMembersGen
 
 router = APIRouter(tags=["Teams"])
@@ -42,7 +42,7 @@ async def get_team(
 ):
     try:
         return await service.get_team_with_members(team_name)
-    except TeamNotFoundError:
+    except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={

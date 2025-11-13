@@ -1,7 +1,5 @@
 # ruff: noqa: F821
 
-import uuid
-
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,10 +13,10 @@ class PRReviewer(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    pr_id: Mapped[uuid.UUID] = mapped_column(
+    pr_id: Mapped[str] = mapped_column(
         ForeignKey("pull_requests.id", ondelete="CASCADE"), nullable=False
     )
-    reviewer_id: Mapped[uuid.UUID] = mapped_column(
+    reviewer_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 

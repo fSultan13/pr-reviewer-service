@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import TeamAlreadyExistsError, TeamNotFoundError
+from app.core.exceptions import NotFoundError, TeamAlreadyExistsError
 from app.models import Team, User
 from app.schemas import TeamWithMembers
 
@@ -45,5 +45,5 @@ class TeamRepository:
         )
         team = await self._session.scalar(stmt)
         if team is None:
-            raise TeamNotFoundError(team_name)
+            raise NotFoundError()
         return team

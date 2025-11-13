@@ -1,65 +1,16 @@
 import pytest
-import pytest_asyncio
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
-from app.core.db import Base
-from app.core.exceptions import TeamAlreadyExistsError, TeamNotFoundError
+from app.core.exceptions import NotFoundError, TeamAlreadyExistsError
 from app.models import Team, User
 from app.repositories import TeamRepository
 from app.schemas import TeamMember, TeamWithMembers
 
-# ---------- БАЗОВЫЕ FIXTURE’Ы ДЛЯ БД ----------
-
-TEST_DATABASE_URL = settings.get_async_database_test_uri
-
-
-@pytest_asyncio.fixture
-async def engine():
-    """
-    Отдельный AsyncEngine на каждый тест.
-    На нём же мы чистим схему (drop_all/create_all).
-    """
-    engine = create_async_engine(TEST_DATABASE_URL, echo=False, future=True)
-
-    async with engine.begin() as conn:
-        # на всякий случай полностью пересоздаём схему
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-
-    try:
-        yield engine
-    finally:
-        await engine.dispose()
-
-
-@pytest_asyncio.fixture
-async def session(engine) -> AsyncSession:
-    """
-    AsyncSession для теста.
-    Никаких DELETE FROM вручную — схему уже почистили выше.
-    """
-    async_session_maker = async_sessionmaker(
-        engine,
-        expire_on_commit=False,
-        class_=AsyncSession,
-    )
-
-    async with async_session_maker() as session:
-        yield session
-        # откатываем всё незакоммиченное (на всякий случай)
-        await session.rollback()
-
-
-@pytest.fixture
-def repo(session: AsyncSession) -> TeamRepository:
-    return TeamRepository(session)
-
 
 @pytest.mark.asyncio
 async def test_create_team_with_members_creates_team_and_users(
-    repo: TeamRepository, session: AsyncSession
+    team_repo: TeamRepository, session: AsyncSession
 ):
     team_in = TeamWithMembers(
         team_name="team-alpha",
@@ -69,7 +20,7 @@ async def test_create_team_with_members_creates_team_and_users(
         ],
     )
 
-    team = await repo.create_team_with_members(team_in)
+    team = await team_repo.create_team_with_members(team_in)
 
     assert isinstance(team, Team)
     assert team.name == "team-alpha"
@@ -89,7 +40,7 @@ async def test_create_team_with_members_creates_team_and_users(
 
 @pytest.mark.asyncio
 async def test_create_team_with_members_raises_if_team_already_exists(
-    repo: TeamRepository, session: AsyncSession
+    team_repo: TeamRepository, session: AsyncSession
 ):
     existing_team = Team(name="existing-team")
     session.add(existing_team)
@@ -101,12 +52,12 @@ async def test_create_team_with_members_raises_if_team_already_exists(
     )
 
     with pytest.raises(TeamAlreadyExistsError):
-        await repo.create_team_with_members(team_in)
+        await team_repo.create_team_with_members(team_in)
 
 
 @pytest.mark.asyncio
 async def test_create_team_with_members_updates_existing_users(
-    repo: TeamRepository, session: AsyncSession
+    team_repo: TeamRepository, session: AsyncSession
 ):
     existing_team = Team(name="old-team")
     session.add(existing_team)
@@ -128,7 +79,7 @@ async def test_create_team_with_members_updates_existing_users(
         ],
     )
 
-    await repo.create_team_with_members(team_in)
+    await team_repo.create_team_with_members(team_in)
 
     user_from_db = await session.get(User, "1")
     assert user_from_db is not None
@@ -142,7 +93,7 @@ async def test_create_team_with_members_updates_existing_users(
 
 @pytest.mark.asyncio
 async def test_get_team_with_members_returns_team_and_users(
-    repo: TeamRepository, session: AsyncSession
+    team_repo: TeamRepository, session: AsyncSession
 ):
     team_in = TeamWithMembers(
         team_name="team-with-members",
@@ -151,9 +102,9 @@ async def test_get_team_with_members_returns_team_and_users(
             TeamMember(user_id="2", username="bob", is_active=False),
         ],
     )
-    await repo.create_team_with_members(team_in)
+    await team_repo.create_team_with_members(team_in)
 
-    team = await repo.get_team_with_members("team-with-members")
+    team = await team_repo.get_team_with_members("team-with-members")
 
     assert isinstance(team, Team)
     assert team.name == "team-with-members"
@@ -165,6 +116,6 @@ async def test_get_team_with_members_returns_team_and_users(
 
 
 @pytest.mark.asyncio
-async def test_get_team_with_members_raises_if_not_found(repo: TeamRepository):
-    with pytest.raises(TeamNotFoundError):
-        await repo.get_team_with_members("non-existing-team")
+async def test_get_team_with_members_raises_if_not_found(team_repo: TeamRepository):
+    with pytest.raises(NotFoundError):
+        await team_repo.get_team_with_members("non-existing-team")

@@ -11,5 +11,6 @@ class TeamWithMembers(BaseModel):
     team_name: str
     members: list[TeamMember]
 
+
 class TeamWithMembersGen(BaseModel):
     team: TeamWithMembers

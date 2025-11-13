@@ -1,0 +1,37 @@
+from app.models import PullRequest, User
+from app.repositories import UserRepository
+from app.schemas import PullRequestShort, UserFull, UserReviewPRs
+
+
+class UserService:
+    def __init__(self, repo: UserRepository) -> None:
+        self._repo = repo
+
+    @staticmethod
+    def _map_user_model(user: User) -> UserFull:
+        return UserFull(
+            user_id=user.id,
+            username=user.username,
+            team_name=user.team_name,
+            is_active=user.is_active,
+        )
+
+    @staticmethod
+    def _map_pr_model(pr: PullRequest) -> PullRequestShort:
+        return PullRequestShort(
+            pull_request_id=pr.id,
+            pull_request_name=pr.title,
+            author_id=pr.author_id,
+            status=pr.status,
+        )
+
+    async def set_is_active(self, user_id: str, is_active: bool) -> UserFull:
+        user_model = await self._repo.set_is_active(user_id, is_active)
+        return self._map_user_model(user_model)
+
+    async def get_review_pull_requests(self, user_id: str) -> UserReviewPRs:
+        prs = await self._repo.get_user_review_pull_requests(user_id)
+        return UserReviewPRs(
+            user_id=user_id,
+            pull_requests=[self._map_pr_model(pr) for pr in prs],
+        )

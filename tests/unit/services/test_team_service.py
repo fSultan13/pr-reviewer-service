@@ -80,6 +80,7 @@ async def test_create_team_with_members_uses_repo_and_maps_result(repo_mock: Asy
         ],
     )
 
+    repo_mock.get_team_with_members.return_value = team_model
     repo_mock.create_team_with_members.return_value = team_model
 
     result = await service.create_team_with_members(input_schema)
