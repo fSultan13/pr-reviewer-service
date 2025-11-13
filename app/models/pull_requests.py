@@ -1,6 +1,7 @@
 # ruff: noqa: F821
 
 import uuid
+from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import Enum as SAEnum
@@ -18,15 +19,19 @@ class PRStatus(str, Enum):
 class PullRequest(Base):
     __tablename__ = "pull_requests"
 
+    id: Mapped[str] = mapped_column(primary_key=True)
+
     title: Mapped[str] = mapped_column(String(200), nullable=False)
 
-    author_id: Mapped[uuid.UUID] = mapped_column(
+    author_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
     status: Mapped[PRStatus] = mapped_column(
         SAEnum(PRStatus, name="pr_status_enum"), default=PRStatus.OPEN, nullable=False
     )
+    merged_at: Mapped[datetime | None]
+
 
     author: Mapped["User"] = relationship(back_populates="authored_prs")
     reviewers: Mapped[list["PRReviewer"]] = relationship(

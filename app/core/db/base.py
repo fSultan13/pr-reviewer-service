@@ -11,11 +11,6 @@ class Base(DeclarativeBase):
     __abstract__ = True
     __mapper_args__ = {"eager_defaults": True}
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        pg.UUID(as_uuid=True),
-        primary_key=True,
-        server_default=text("gen_random_uuid()"),
-    )
     created_at: Mapped[datetime] = mapped_column(
         pg.TIMESTAMP(timezone=True), server_default=func.now()
     )

@@ -13,6 +13,8 @@ class PRReviewer(Base):
 
     __table_args__ = (UniqueConstraint("pr_id", "reviewer_id", name="uq_pr_reviewer"),)
 
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
     pr_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("pull_requests.id", ondelete="CASCADE"), nullable=False
     )

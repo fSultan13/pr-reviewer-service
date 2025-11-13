@@ -9,7 +9,7 @@ from app.core.db import Base
 class Team(Base):
     __tablename__ = "teams"
 
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(primary_key=True)
 
     users: Mapped[list["User"]] = relationship(
         back_populates="team", cascade="all, delete-orphan"
