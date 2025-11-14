@@ -49,6 +49,10 @@ class Settings(BaseSettings):
         )
 
     @computed_field
+    def get_back_http_url(self) -> str:
+        return f"http://{self.BACKEND_HOST}:{self.BACKEND_PORT}"
+
+    @computed_field
     @property
     def get_async_database_test_uri(self) -> URL:
         return URL.create(

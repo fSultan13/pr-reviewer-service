@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 
 from app.api.deps import TeamServiceDep
 from app.core.exceptions import AlreadyExistsError, NotFoundError
@@ -19,9 +20,9 @@ async def add_team(
     try:
         team = await service.create_team_with_members(payload)
     except AlreadyExistsError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
+            content={
                 "error": {
                     "code": "TEAM_EXISTS",
                     "message": "team_name already exists",
@@ -43,11 +44,11 @@ async def get_team(
     try:
         return await service.get_team_with_members(team_name)
     except NotFoundError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
+            content={
                 "error": {
-                    "code": "TEAM_NOT_FOUND",
+                    "code": "NOT_FOUND",
                     "message": "team not found",
                 }
             },

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 
 from app.api.deps import UserServiceDep
 from app.core.exceptions import NotFoundError
@@ -22,11 +23,11 @@ async def set_is_active(
             is_active=payload.is_active,
         )
     except NotFoundError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
+            content={
                 "error": {
-                    "code": "USER_NOT_FOUND",
+                    "code": "NOT_FOUND",
                     "message": "user not found",
                 }
             },
@@ -46,11 +47,11 @@ async def get_user_review_prs(
     try:
         return await service.get_review_pull_requests(user_id)
     except NotFoundError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
+            content={
                 "error": {
-                    "code": "USER_NOT_FOUND",
+                    "code": "NOT_FOUND",
                     "message": "user not found",
                 }
             },

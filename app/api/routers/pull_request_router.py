@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 
 from app.api.deps import PullRequestServiceDep
 from app.core.exceptions import (
@@ -32,9 +33,9 @@ async def create_pull_request(
         pr = await service.create_pull_request(payload)
     except AlreadyExistsError:
         # 409 PR_EXISTS
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            detail={
+            content={
                 "error": {
                     "code": "PR_EXISTS",
                     "message": "PR id already exists",
@@ -43,9 +44,9 @@ async def create_pull_request(
         )
     except NotFoundError:
         # 404 Автор/команда не найдены
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
+            content={
                 "error": {
                     "code": "AUTHOR_OR_TEAM_NOT_FOUND",
                     "message": "author or team not found",
@@ -67,9 +68,9 @@ async def merge_pull_request(
     try:
         pr = await service.merge_pull_request(payload)
     except NotFoundError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
+            content={
                 "error": {
                     "code": "PR_NOT_FOUND",
                     "message": "pull request not found",
@@ -91,9 +92,9 @@ async def reassign_reviewer(
     try:
         pr, replaced_by = await service.reassign_reviewer(payload)
     except NotFoundError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
+            content={
                 "error": {
                     "code": "NOT_FOUND",
                     "message": "pull request or user not found",
@@ -101,9 +102,9 @@ async def reassign_reviewer(
             },
         )
     except PullRequestMergedError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            detail={
+            content={
                 "error": {
                     "code": "PR_MERGED",
                     "message": "cannot reassign on merged PR",
@@ -111,9 +112,9 @@ async def reassign_reviewer(
             },
         )
     except ReviewerNotAssignedError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            detail={
+            content={
                 "error": {
                     "code": "NOT_ASSIGNED",
                     "message": "reviewer is not assigned to this PR",
@@ -121,9 +122,9 @@ async def reassign_reviewer(
             },
         )
     except NoReplacementCandidateError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            detail={
+            content={
                 "error": {
                     "code": "NO_CANDIDATE",
                     "message": "no active replacement candidate in team",
