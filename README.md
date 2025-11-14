@@ -57,7 +57,6 @@ POSTGRES_PASSWORD_TEST=xxXX1234
 SECRET_KEY=local
 ```
 
-
 > * Задайте свои реальные значения пароля и `SECRET_KEY`, особенно для продакшена.
 > * При необходимости можно добавить переменную `API_V1_STR="/api/v1"`, чтобы повесить всё API на префикс.
 
@@ -230,7 +229,6 @@ make check
 
 ---
 
-
 ## Нагрузочное тестирование
 
 Нагрузочное тестирование проводилось с помощью Locust.
@@ -245,27 +243,26 @@ locust -f locustfile.py \
   --host http://localhost:8080
 ```
 
-Параметры сценария: ~13.8 req/s суммарно по основным эндпоинтам (/pullRequest/create, /pullRequest/reassign,
+Параметры сценария: ~11.9 req/s суммарно по основным эндпоинтам (/pullRequest/create, /pullRequest/reassign,
 /pullRequest/merge, /users/getReview).
 
 Результаты:
 
-Всего запросов: 4128
+Всего запросов: 3569
 
 Ошибки: 0 (100% успешных, при требовании ≥ 99.9%)
 
-Средний RPS: ~13.8 (требование: 5 RPS – сервис выдерживает нагрузку с запасом)
+Средний RPS: ~11.9 (требование: 5 RPS – сервис выдерживает нагрузку с запасом)
 
 Aggregated latency:
 
-- p95: 16 ms
-- p99: 21 ms
-- p99.9: 31 ms
-- max: 81 ms (при лимите 300 ms)
+- p95: 14 ms
+- p99: 17 ms
+- p99.9: 35 ms
+- max: 49 ms (при лимите 300 ms)
 
-Вывод: сервис при нагрузке, превышающей требуемую (13.8 RPS против 5 RPS), демонстрирует время ответа значительно ниже
+Вывод: сервис при нагрузке, превышающей требуемую (11.9 RPS против 5 RPS), демонстрирует время ответа значительно ниже
 300 ms и успешность 100%, что удовлетворяет заявленным SLI с запасом.
-
 
 ### Вывод Locust
 
@@ -273,46 +270,45 @@ Aggregated latency:
 
 | Type | Name                         | # reqs | # fails   | Avg | Min | Max | Med | req/s | failures/s |
 |------|------------------------------|--------|-----------|-----|-----|-----|-----|-------|------------|
-| POST | /pullRequest/create          | 1248   | 0 (0.00%) | 10  | 4   | 55  | 10  | 4.16  | 0.00       |
-| POST | /pullRequest/merge           | 1224   | 0 (0.00%) | 7   | 2   | 28  | 7   | 4.08  | 0.00       |
-| POST | /pullRequest/reassign        | 818    | 0 (0.00%) | 10  | 4   | 31  | 10  | 2.73  | 0.00       |
-| POST | /team/add                    | 5      | 0 (0.00%) | 21  | 3   | 81  | 9   | 0.02  | 0.00       |
-| GET  | /users/getReview?user_id=u1  | 99     | 0 (0.00%) | 6   | 2   | 30  | 6   | 0.33  | 0.00       |
-| GET  | /users/getReview?user_id=u10 | 97     | 0 (0.00%) | 6   | 1   | 24  | 6   | 0.32  | 0.00       |
-| GET  | /users/getReview?user_id=u2  | 77     | 0 (0.00%) | 6   | 2   | 14  | 6   | 0.26  | 0.00       |
-| GET  | /users/getReview?user_id=u3  | 70     | 0 (0.00%) | 5   | 2   | 17  | 5   | 0.23  | 0.00       |
-| GET  | /users/getReview?user_id=u4  | 85     | 0 (0.00%) | 6   | 2   | 22  | 6   | 0.28  | 0.00       |
-| GET  | /users/getReview?user_id=u5  | 86     | 0 (0.00%) | 6   | 2   | 17  | 6   | 0.29  | 0.00       |
-| GET  | /users/getReview?user_id=u6  | 75     | 0 (0.00%) | 6   | 2   | 22  | 6   | 0.25  | 0.00       |
-| GET  | /users/getReview?user_id=u7  | 78     | 0 (0.00%) | 6   | 2   | 21  | 5   | 0.26  | 0.00       |
-| GET  | /users/getReview?user_id=u8  | 86     | 0 (0.00%) | 6   | 2   | 12  | 6   | 0.29  | 0.00       |
-| GET  | /users/getReview?user_id=u9  | 80     | 0 (0.00%) | 6   | 2   | 25  | 6   | 0.27  | 0.00       |
-|      | **Aggregated**               | 4128   | 0 (0.00%) | 8   | 1   | 81  | 8   | 13.77 | 0.00       |
-
+| POST | /pullRequest/create          | 1122   | 0 (0.00%) | 9   | 3   | 36  | 9   | 3.74  | 0.00       |
+| POST | /pullRequest/merge           | 1104   | 0 (0.00%) | 7   | 2   | 36  | 7   | 3.68  | 0.00       |
+| POST | /pullRequest/reassign        | 205    | 0 (0.00%) | 5   | 2   | 49  | 5   | 0.68  | 0.00       |
+| POST | /team/add                    | 5      | 0 (0.00%) | 6   | 3   | 16  | 5   | 0.02  | 0.00       |
+| POST | /team/deactivateUsers        | 358    | 0 (0.00%) | 7   | 3   | 21  | 7   | 1.19  | 0.00       |
+| GET  | /users/getReview?user_id=u1  | 65     | 0 (0.00%) | 4   | 2   | 9   | 4   | 0.22  | 0.00       |
+| GET  | /users/getReview?user_id=u10 | 73     | 0 (0.00%) | 4   | 2   | 12  | 4   | 0.24  | 0.00       |
+| GET  | /users/getReview?user_id=u2  | 72     | 0 (0.00%) | 5   | 2   | 16  | 5   | 0.24  | 0.00       |
+| GET  | /users/getReview?user_id=u3  | 69     | 0 (0.00%) | 5   | 2   | 12  | 4   | 0.23  | 0.00       |
+| GET  | /users/getReview?user_id=u4  | 74     | 0 (0.00%) | 5   | 2   | 10  | 5   | 0.25  | 0.00       |
+| GET  | /users/getReview?user_id=u5  | 82     | 0 (0.00%) | 5   | 2   | 12  | 4   | 0.27  | 0.00       |
+| GET  | /users/getReview?user_id=u6  | 80     | 0 (0.00%) | 4   | 1   | 10  | 4   | 0.27  | 0.00       |
+| GET  | /users/getReview?user_id=u7  | 80     | 0 (0.00%) | 4   | 2   | 8   | 5   | 0.27  | 0.00       |
+| GET  | /users/getReview?user_id=u8  | 86     | 0 (0.00%) | 4   | 2   | 12  | 4   | 0.29  | 0.00       |
+| GET  | /users/getReview?user_id=u9  | 94     | 0 (0.00%) | 4   | 2   | 9   | 4   | 0.31  | 0.00       |
+|      | **Aggregated**               | 3569   | 0 (0.00%) | 7   | 1   | 49  | 7   | 11.91 | 0.00       |
 
 Таблица 2 — персентили времени ответа
 
 | Type | Name                         | 50% | 66% | 75% | 80% | 90% | 95% | 98% | 99% | 99.9% | 99.99% | 100% | # reqs |
 |------|------------------------------|-----|-----|-----|-----|-----|-----|-----|-----|-------|--------|------|--------|
-| POST | /pullRequest/create          | 10  | 11  | 12  | 13  | 15  | 18  | 20  | 23  | 40    | 56     | 56   | 1248   |
-| POST | /pullRequest/merge           | 7   | 8   | 9   | 9   | 11  | 13  | 15  | 17  | 27    | 28     | 28   | 1224   |
-| POST | /pullRequest/reassign        | 10  | 11  | 13  | 13  | 16  | 17  | 19  | 20  | 31    | 31     | 31   | 818    |
-| POST | /team/add                    | 9   | 9   | 9   | 81  | 81  | 81  | 81  | 81  | 81    | 81     | 81   | 5      |
-| GET  | /users/getReview?user_id=u1  | 6   | 7   | 8   | 8   | 10  | 11  | 13  | 30  | 30    | 30     | 30   | 99     |
-| GET  | /users/getReview?user_id=u10 | 6   | 7   | 8   | 8   | 11  | 11  | 13  | 24  | 24    | 24     | 24   | 97     |
-| GET  | /users/getReview?user_id=u2  | 6   | 7   | 8   | 8   | 10  | 12  | 14  | 14  | 14    | 14     | 14   | 77     |
-| GET  | /users/getReview?user_id=u3  | 5   | 6   | 7   | 7   | 9   | 11  | 13  | 18  | 18    | 18     | 18   | 70     |
-| GET  | /users/getReview?user_id=u4  | 6   | 7   | 7   | 8   | 9   | 12  | 18  | 23  | 23    | 23     | 23   | 85     |
-| GET  | /users/getReview?user_id=u5  | 6   | 7   | 7   | 8   | 9   | 11  | 13  | 18  | 18    | 18     | 18   | 86     |
-| GET  | /users/getReview?user_id=u6  | 6   | 6   | 7   | 7   | 8   | 10  | 14  | 23  | 23    | 23     | 23   | 75     |
-| GET  | /users/getReview?user_id=u7  | 5   | 6   | 7   | 7   | 9   | 12  | 17  | 21  | 21    | 21     | 21   | 78     |
-| GET  | /users/getReview?user_id=u8  | 6   | 7   | 8   | 8   | 9   | 11  | 12  | 12  | 12    | 12     | 12   | 86     |
-| GET  | /users/getReview?user_id=u9  | 6   | 7   | 7   | 8   | 11  | 15  | 24  | 25  | 25    | 25     | 25   | 80     |
-|      | **Aggregated**               | 8   | 10  | 11  | 11  | 14  | 16  | 19  | 21  | 31    | 81     | 81   | 4128   |
-
+| POST | /pullRequest/create          | 9   | 10  | 11  | 12  | 14  | 16  | 17  | 19  | 35    | 37     | 37   | 1122   |
+| POST | /pullRequest/merge           | 7   | 8   | 9   | 9   | 11  | 13  | 15  | 15  | 30    | 36     | 36   | 1104   |
+| POST | /pullRequest/reassign        | 5   | 6   | 6   | 7   | 8   | 9   | 11  | 15  | 50    | 50     | 50   | 205    |
+| POST | /team/add                    | 5   | 6   | 6   | 17  | 17  | 17  | 17  | 17  | 17    | 17     | 17   | 5      |
+| POST | /team/deactivateUsers        | 7   | 8   | 9   | 9   | 11  | 12  | 14  | 18  | 21    | 21     | 21   | 358    |
+| GET  | /users/getReview?user_id=u1  | 4   | 5   | 6   | 6   | 8   | 8   | 8   | 9   | 9     | 9      | 9    | 65     |
+| GET  | /users/getReview?user_id=u10 | 4   | 5   | 5   | 6   | 7   | 8   | 9   | 12  | 12    | 12     | 12   | 73     |
+| GET  | /users/getReview?user_id=u2  | 5   | 6   | 6   | 6   | 8   | 9   | 10  | 16  | 16    | 16     | 16   | 72     |
+| GET  | /users/getReview?user_id=u3  | 4   | 5   | 6   | 7   | 9   | 9   | 10  | 13  | 13    | 13     | 13   | 69     |
+| GET  | /users/getReview?user_id=u4  | 5   | 6   | 7   | 7   | 8   | 9   | 10  | 11  | 11    | 11     | 11   | 74     |
+| GET  | /users/getReview?user_id=u5  | 4   | 5   | 6   | 6   | 8   | 9   | 10  | 13  | 13    | 13     | 13   | 82     |
+| GET  | /users/getReview?user_id=u6  | 4   | 5   | 6   | 6   | 8   | 9   | 9   | 10  | 10    | 10     | 10   | 80     |
+| GET  | /users/getReview?user_id=u7  | 5   | 5   | 6   | 6   | 7   | 8   | 8   | 9   | 9     | 9      | 9    | 80     |
+| GET  | /users/getReview?user_id=u8  | 5   | 5   | 6   | 6   | 8   | 8   | 11  | 13  | 13    | 13     | 13   | 86     |
+| GET  | /users/getReview?user_id=u9  | 4   | 5   | 6   | 6   | 7   | 8   | 8   | 9   | 9     | 9      | 9    | 94     |
+|      | **Aggregated**               | 7   | 8   | 9   | 10  | 12  | 14  | 16  | 17  | 35    | 50     | 50   | 3569   |
 
 ---
-
 
 ## 11. Лицензия
 

@@ -15,6 +15,8 @@ from app.schemas import (
     PullRequestReassignPayload,
     PullRequestReassignResponse,
     PullRequestResponse,
+    TeamBulkDeactivatePayload,
+    TeamBulkDeactivateResult,
 )
 
 router = APIRouter(tags=["PullRequests"])
@@ -133,3 +135,27 @@ async def reassign_reviewer(
         )
 
     return {"pr": pr, "replaced_by": replaced_by}
+
+
+@router.post(
+    "/team/deactivateUsers",
+    response_model=TeamBulkDeactivateResult,
+)
+async def bulk_deactivate_team_users(
+    payload: TeamBulkDeactivatePayload,
+    service: PullRequestServiceDep,
+):
+    try:
+        result = await service.bulk_deactivate_team_users_and_reassign(payload)
+    except NotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "error": {
+                    "code": "TEAM_OR_USERS_NOT_FOUND",
+                    "message": "team or users not found",
+                }
+            },
+        )
+
+    return result

@@ -44,3 +44,15 @@ class PullRequestResponse(BaseModel):
 class PullRequestReassignResponse(BaseModel):
     pr: PullRequestFull
     replaced_by: str
+
+
+class TeamBulkDeactivatePayload(BaseModel):
+    team_name: str
+    user_ids: list[str]
+
+
+class TeamBulkDeactivateResult(BaseModel):
+    team_name: str
+    deactivated_users: int
+    reassigned_reviewers: int
+    affected_pull_requests: int

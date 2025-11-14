@@ -100,3 +100,62 @@ async def test_full_pr_lifecycle(client, unique_suffix):
     print(resp.json())
     err = resp.json()["error"]
     assert err["code"] == "PR_MERGED"
+
+
+@pytest.mark.e2e
+@pytest.mark.anyio
+async def test_bulk_deactivate_team_users_and_reassign_e2e(client, unique_suffix):
+    team_name = f"bulk-{unique_suffix}"
+    u1 = f"{team_name}-u1"
+    u2 = f"{team_name}-u2"
+    u3 = f"{team_name}-u3"
+    u4 = f"{team_name}-u4"
+
+    team_payload = {
+        "team_name": team_name,
+        "members": [
+            {"user_id": u1, "username": "Alice", "is_active": True},
+            {"user_id": u2, "username": "Bob", "is_active": True},
+            {"user_id": u3, "username": "Charlie", "is_active": True},
+            {"user_id": u4, "username": "Dave", "is_active": True},
+        ],
+    }
+
+    resp = await client.post("/team/add", json=team_payload)
+    assert resp.status_code == 201, resp.text
+
+    pr_id = f"pr-{uuid4().hex[:8]}"
+    create_payload = {
+        "pull_request_id": pr_id,
+        "pull_request_name": "bulk deactivate PR",
+        "author_id": u1,
+    }
+
+    resp = await client.post("/pullRequest/create", json=create_payload)
+    assert resp.status_code == 201, resp.text
+    pr = resp.json()["pr"]
+
+    reviewers_before = pr["assigned_reviewers"]
+    assert reviewers_before
+
+    old_reviewer = reviewers_before[0]
+    to_deactivate = list({old_reviewer, u4})
+
+    resp = await client.post(
+        "/team/deactivateUsers",
+        json={"team_name": team_name, "user_ids": to_deactivate},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["team_name"] == team_name
+    assert body["deactivated_users"] >= len(set(to_deactivate))
+
+    resp = await client.get("/users/getReview", params={"user_id": old_reviewer})
+    assert resp.status_code == 200, resp.text
+    review_body = resp.json()
+    assert all(p["pull_request_id"] != pr_id for p in review_body["pull_requests"])
+
+    resp = await client.post("/pullRequest/merge", json={"pull_request_id": pr_id})
+    assert resp.status_code == 200, resp.text
+    merged = resp.json()["pr"]
+    assert merged["status"] == "MERGED"

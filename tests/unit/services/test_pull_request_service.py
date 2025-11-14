@@ -9,6 +9,8 @@ from app.schemas import (
     PullRequestFull,
     PullRequestMergePayload,
     PullRequestReassignPayload,
+    TeamBulkDeactivatePayload,
+    TeamBulkDeactivateResult,
 )
 from app.services import PullRequestService
 
@@ -167,3 +169,34 @@ async def test_reassign_reviewer_uses_repo_and_maps_result(
     assert result_pr.pull_request_id == "pr-1001"
     assert result_pr.assigned_reviewers == ["u3"]
     assert replaced_by == "u3"
+
+
+@pytest.mark.asyncio
+async def test_bulk_deactivate_team_users_and_reassign_uses_repo_and_maps_result(
+    repo_mock_pull_request: AsyncMock,
+):
+    service = PullRequestService(repo_mock_pull_request)
+
+    payload = TeamBulkDeactivatePayload(
+        team_name="team-1",
+        user_ids=["u1", "u2"],
+    )
+
+    repo_mock_pull_request.bulk_deactivate_team_users_and_reassign.return_value = (
+        2,
+        3,
+        1,
+    )
+
+    result = await service.bulk_deactivate_team_users_and_reassign(payload)
+
+    repo_mock_pull_request.bulk_deactivate_team_users_and_reassign.assert_awaited_once_with(
+        team_name="team-1",
+        user_ids=["u1", "u2"],
+    )
+
+    assert isinstance(result, TeamBulkDeactivateResult)
+    assert result.team_name == "team-1"
+    assert result.deactivated_users == 2
+    assert result.reassigned_reviewers == 3
+    assert result.affected_pull_requests == 1

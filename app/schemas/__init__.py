@@ -6,6 +6,8 @@ from app.schemas.pull_request_shema import (
     PullRequestReassignResponse,
     PullRequestResponse,
     PullRequestShort,
+    TeamBulkDeactivatePayload,
+    TeamBulkDeactivateResult,
 )
 from app.schemas.team_shema import TeamMember, TeamWithMembers, TeamWithMembersGen
 from app.schemas.user_shema import (
@@ -36,4 +38,6 @@ __all__ = [
     "PullRequestReassignPayload",
     "PullRequestResponse",
     "PullRequestReassignResponse",
+    "TeamBulkDeactivatePayload",
+    "TeamBulkDeactivateResult",
 ]

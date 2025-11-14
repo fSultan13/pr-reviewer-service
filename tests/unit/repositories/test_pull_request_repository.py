@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
@@ -523,3 +524,129 @@ async def test_get_review_stats_by_pr_returns_counts_grouped_by_pr(
     assert stats_dict["pr-1"] == 2
     assert stats_dict["pr-2"] == 1
     assert "pr-3" not in stats_dict
+
+
+@pytest.mark.asyncio
+async def test_bulk_deactivate_team_users_and_reassign_replaces_reviewers(
+    pr_repo: PullRequestRepository,
+    session: AsyncSession,
+):
+    team = Team(name="team-bulk")
+    author = User(
+        id="author-1",
+        username="author",
+        is_active=True,
+        team_name="team-bulk",
+    )
+    r1 = User(
+        id="rev-1",
+        username="rev1",
+        is_active=True,
+        team_name="team-bulk",
+    )
+    r2 = User(
+        id="rev-2",
+        username="rev2",
+        is_active=True,
+        team_name="team-bulk",
+    )
+    r3 = User(
+        id="rev-3",
+        username="rev3",
+        is_active=True,
+        team_name="team-bulk",
+    )
+
+    pr = PullRequest(
+        id="pr-1",
+        title="PR",
+        author_id="author-1",
+        status=PRStatus.OPEN,
+    )
+    pr_rev1 = PRReviewer(pr_id="pr-1", reviewer_id="rev-1")
+    pr_rev2 = PRReviewer(pr_id="pr-1", reviewer_id="rev-2")
+
+    session.add_all([team, author, r1, r2, r3, pr, pr_rev1, pr_rev2])
+    await session.commit()
+
+    deactivated, reassigned, pr_count = (
+        await pr_repo.bulk_deactivate_team_users_and_reassign(
+            team_name="team-bulk",
+            user_ids=["rev-1", "rev-2"],
+        )
+    )
+
+    assert deactivated == 2
+    assert pr_count == 1
+    assert reassigned >= 1
+
+    r1_db = await session.get(User, "rev-1")
+    r2_db = await session.get(User, "rev-2")
+    r3_db = await session.get(User, "rev-3")
+    assert r1_db.is_active is False
+    assert r2_db.is_active is False
+    assert r3_db.is_active is True
+
+    stmt = select(PRReviewer.reviewer_id).where(PRReviewer.pr_id == "pr-1")
+    reviewer_ids = set(await session.scalars(stmt))
+    assert "rev-1" not in reviewer_ids
+    assert "rev-2" not in reviewer_ids
+    assert reviewer_ids  # хотя бы один ревьювер остался
+    assert reviewer_ids.issubset({"rev-3"})
+
+
+@pytest.mark.asyncio
+async def test_bulk_deactivate_team_users_and_reassign_removes_when_no_candidate(
+    pr_repo: PullRequestRepository,
+    session: AsyncSession,
+):
+    team = Team(name="team-bulk-no-candidate")
+    author = User(
+        id="author-1",
+        username="author",
+        is_active=True,
+        team_name="team-bulk-no-candidate",
+    )
+    r1 = User(
+        id="rev-1",
+        username="rev1",
+        is_active=True,
+        team_name="team-bulk-no-candidate",
+    )
+
+    pr = PullRequest(
+        id="pr-1",
+        title="PR",
+        author_id="author-1",
+        status=PRStatus.OPEN,
+    )
+    pr_rev = PRReviewer(pr_id="pr-1", reviewer_id="rev-1")
+
+    session.add_all([team, author, r1, pr, pr_rev])
+    await session.commit()
+
+    deactivated, reassigned, pr_count = (
+        await pr_repo.bulk_deactivate_team_users_and_reassign(
+            team_name="team-bulk-no-candidate",
+            user_ids=["rev-1"],
+        )
+    )
+
+    assert deactivated == 1
+    assert reassigned == 0
+    assert pr_count == 1
+
+    stmt = select(PRReviewer.reviewer_id).where(PRReviewer.pr_id == "pr-1")
+    reviewer_ids = set(await session.scalars(stmt))
+    assert reviewer_ids == set()
+
+
+@pytest.mark.asyncio
+async def test_bulk_deactivate_team_users_and_reassign_raises_if_team_not_found(
+    pr_repo: PullRequestRepository,
+):
+    with pytest.raises(NotFoundError):
+        await pr_repo.bulk_deactivate_team_users_and_reassign(
+            team_name="unknown-team",
+            user_ids=["u1", "u2"],
+        )

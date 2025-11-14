@@ -183,3 +183,32 @@ class PRReviewerUser(HttpUser):
         """
         user_id = random.choice(self.author_ids)
         self.client.get("/users/getReview", params={"user_id": user_id})
+
+    @task(1)
+    def bulk_deactivate_team_users_and_reassign(self):
+        """
+        Массовая деактивация части пользователей команды и безопасная
+        переназначаемость открытых PR.
+        /team/deactivateUsers
+        """
+        if len(self.author_ids) < 2:
+            return
+
+        user_ids = random.sample(self.author_ids, k=2)
+
+        payload = {
+            "team_name": TEAM_NAME,
+            "user_ids": user_ids,
+        }
+
+        with self.client.post(
+            "/team/deactivateUsers",
+            json=payload,
+            catch_response=True,
+        ) as resp:
+            if resp.status_code == 200:
+                resp.success()
+            else:
+                resp.failure(
+                    f"Unexpected status {resp.status_code} on /team/deactivateUsers: {resp.text}"
+                )
