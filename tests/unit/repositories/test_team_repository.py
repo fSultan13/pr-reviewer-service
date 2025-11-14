@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError, TeamAlreadyExistsError
+from app.core.exceptions import AlreadyExistsError, NotFoundError
 from app.models import Team, User
 from app.repositories import TeamRepository
 from app.schemas import TeamMember, TeamWithMembers
@@ -51,7 +51,7 @@ async def test_create_team_with_members_raises_if_team_already_exists(
         members=[],
     )
 
-    with pytest.raises(TeamAlreadyExistsError):
+    with pytest.raises(AlreadyExistsError):
         await team_repo.create_team_with_members(team_in)
 
 

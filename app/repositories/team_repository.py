@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import NotFoundError, TeamAlreadyExistsError
+from app.core.exceptions import AlreadyExistsError, NotFoundError
 from app.models import Team, User
 from app.schemas import TeamWithMembers
 
@@ -14,7 +14,7 @@ class TeamRepository:
     async def create_team_with_members(self, team_in: TeamWithMembers) -> Team:
         existing_team = await self._session.get(Team, team_in.team_name)
         if existing_team is not None:
-            raise TeamAlreadyExistsError(team_in.team_name)
+            raise AlreadyExistsError()
 
         team = Team(name=team_in.team_name)
         self._session.add(team)

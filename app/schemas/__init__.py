@@ -1,4 +1,12 @@
-from app.schemas.pr_shema import PullRequestShort
+from app.schemas.pull_request_shema import (
+    PullRequestCreatePayload,
+    PullRequestFull,
+    PullRequestMergePayload,
+    PullRequestReassignPayload,
+    PullRequestReassignResponse,
+    PullRequestResponse,
+    PullRequestShort,
+)
 from app.schemas.team_shema import TeamMember, TeamWithMembers, TeamWithMembersGen
 from app.schemas.user_shema import (
     PRReviewStat,
@@ -22,4 +30,10 @@ __all__ = [
     "UserReviewStat",
     "PRReviewStat",
     "ReviewStats",
+    "PullRequestFull",
+    "PullRequestCreatePayload",
+    "PullRequestMergePayload",
+    "PullRequestReassignPayload",
+    "PullRequestResponse",
+    "PullRequestReassignResponse",
 ]

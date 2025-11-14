@@ -24,7 +24,12 @@ class DummyPullRequest:
 
 
 @pytest.fixture
-def repo_mock() -> AsyncMock:
+def repo_mock_user() -> AsyncMock:
+    return AsyncMock()
+
+
+@pytest.fixture
+def repo_mock_pull_request() -> AsyncMock:
     return AsyncMock()
 
 
@@ -69,8 +74,10 @@ def test_map_pr_model():
 
 
 @pytest.mark.asyncio
-async def test_set_is_active_uses_repo_and_maps_result(repo_mock: AsyncMock):
-    service = UserService(repo_mock)
+async def test_set_is_active_uses_repo_and_maps_result(
+    repo_mock_user: AsyncMock, repo_mock_pull_request: AsyncMock
+):
+    service = UserService(repo_mock_user, repo_mock_pull_request)
 
     user_model = DummyUser(
         id="u1",
@@ -79,11 +86,11 @@ async def test_set_is_active_uses_repo_and_maps_result(repo_mock: AsyncMock):
         is_active=False,
     )
 
-    repo_mock.set_is_active.return_value = user_model
+    repo_mock_user.set_is_active.return_value = user_model
 
     result = await service.set_is_active(user_id="u1", is_active=False)
 
-    repo_mock.set_is_active.assert_awaited_once_with("u1", False)
+    repo_mock_user.set_is_active.assert_awaited_once_with("u1", False)
 
     assert isinstance(result, UserFull)
     assert result.user_id == "u1"
@@ -93,8 +100,10 @@ async def test_set_is_active_uses_repo_and_maps_result(repo_mock: AsyncMock):
 
 
 @pytest.mark.asyncio
-async def test_get_review_pull_requests_uses_repo_and_maps_result(repo_mock: AsyncMock):
-    service = UserService(repo_mock)
+async def test_get_review_pull_requests_uses_repo_and_maps_result(
+    repo_mock_user: AsyncMock, repo_mock_pull_request: AsyncMock
+):
+    service = UserService(repo_mock_user, repo_mock_pull_request)
 
     pr1 = DummyPullRequest(
         id="pr-1001",
@@ -109,11 +118,11 @@ async def test_get_review_pull_requests_uses_repo_and_maps_result(repo_mock: Asy
         status=PRStatus.MERGED,
     )
 
-    repo_mock.get_user_review_pull_requests.return_value = [pr1, pr2]
+    repo_mock_user.get_user_review_pull_requests.return_value = [pr1, pr2]
 
     result = await service.get_review_pull_requests(user_id="u2")
 
-    repo_mock.get_user_review_pull_requests.assert_awaited_once_with("u2")
+    repo_mock_user.get_user_review_pull_requests.assert_awaited_once_with("u2")
 
     assert isinstance(result, UserReviewPRs)
     assert result.user_id == "u2"
@@ -133,14 +142,16 @@ async def test_get_review_pull_requests_uses_repo_and_maps_result(repo_mock: Asy
 
 
 @pytest.mark.asyncio
-async def test_get_review_pull_requests_empty_list(repo_mock: AsyncMock):
-    service = UserService(repo_mock)
+async def test_get_review_pull_requests_empty_list(
+    repo_mock_user: AsyncMock, repo_mock_pull_request: AsyncMock
+):
+    service = UserService(repo_mock_user, repo_mock_pull_request)
 
-    repo_mock.get_user_review_pull_requests.return_value = []
+    repo_mock_user.get_user_review_pull_requests.return_value = []
 
     result = await service.get_review_pull_requests(user_id="u2")
 
-    repo_mock.get_user_review_pull_requests.assert_awaited_once_with("u2")
+    repo_mock_user.get_user_review_pull_requests.assert_awaited_once_with("u2")
     assert isinstance(result, UserReviewPRs)
     assert result.user_id == "u2"
     assert result.pull_requests == []

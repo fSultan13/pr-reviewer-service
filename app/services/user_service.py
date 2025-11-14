@@ -1,5 +1,5 @@
 from app.models import PullRequest, User
-from app.repositories import UserRepository
+from app.repositories import PullRequestRepository, UserRepository
 from app.schemas import (
     PRReviewStat,
     PullRequestShort,
@@ -11,8 +11,11 @@ from app.schemas import (
 
 
 class UserService:
-    def __init__(self, repo: UserRepository) -> None:
-        self._repo = repo
+    def __init__(
+        self, repo_user: UserRepository, repo_pr: PullRequestRepository
+    ) -> None:
+        self._repo_user = repo_user
+        self._repo_pr = repo_pr
 
     @staticmethod
     def _map_user_model(user: User) -> UserFull:
@@ -33,11 +36,11 @@ class UserService:
         )
 
     async def set_is_active(self, user_id: str, is_active: bool) -> UserFull:
-        user_model = await self._repo.set_is_active(user_id, is_active)
+        user_model = await self._repo_user.set_is_active(user_id, is_active)
         return self._map_user_model(user_model)
 
     async def get_review_pull_requests(self, user_id: str) -> UserReviewPRs:
-        prs = await self._repo.get_user_review_pull_requests(user_id)
+        prs = await self._repo_user.get_user_review_pull_requests(user_id)
         return UserReviewPRs(
             user_id=user_id,
             pull_requests=[self._map_pr_model(pr) for pr in prs],
@@ -49,8 +52,8 @@ class UserService:
         - по пользователям
         - по PR.
         """
-        by_user_raw = await self._repo.get_review_stats_by_user()
-        by_pr_raw = await self._repo.get_review_stats_by_pr()
+        by_user_raw = await self._repo_user.get_review_stats_by_user()
+        by_pr_raw = await self._repo_pr.get_review_stats_by_pr()
 
         return ReviewStats(
             by_user=[

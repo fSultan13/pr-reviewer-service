@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.deps import TeamServiceDep
-from app.core.exceptions import NotFoundError, TeamAlreadyExistsError
+from app.core.exceptions import AlreadyExistsError, NotFoundError
 from app.schemas import TeamWithMembers, TeamWithMembersGen
 
 router = APIRouter(tags=["Teams"])
@@ -18,7 +18,7 @@ async def add_team(
 ):
     try:
         team = await service.create_team_with_members(payload)
-    except TeamAlreadyExistsError:
+    except AlreadyExistsError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={

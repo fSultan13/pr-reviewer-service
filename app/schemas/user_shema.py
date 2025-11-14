@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.pr_shema import PullRequestShort
+from app.schemas.pull_request_shema import PRReviewStat, PullRequestShort
 
 
 class UserFull(BaseModel):
@@ -27,11 +27,6 @@ class UserReviewPRs(BaseModel):
 class UserReviewStat(BaseModel):
     user_id: str
     reviews_assigned: int
-
-
-class PRReviewStat(BaseModel):
-    pull_request_id: str
-    reviewers_assigned: int
 
 
 class ReviewStats(BaseModel):

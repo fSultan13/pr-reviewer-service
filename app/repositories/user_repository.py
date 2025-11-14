@@ -45,14 +45,3 @@ class UserRepository:
 
         result = await self._session.execute(stmt)
         return [(row[0], row[1]) for row in result.all()]
-
-    async def get_review_stats_by_pr(
-        self,
-    ) -> list[tuple[str, int]]:  # TODO: Перенести в репозиторий пр
-        stmt = select(
-            PRReviewer.pr_id,
-            func.count(PRReviewer.reviewer_id),
-        ).group_by(PRReviewer.pr_id)
-
-        result = await self._session.execute(stmt)
-        return [(row[0], row[1]) for row in result.all()]
