@@ -5,13 +5,14 @@ from app.api.deps import UserServiceDep
 from app.core.exceptions import NotFoundError
 from app.schemas import ReviewStats, SetIsActiveRequest, UserGen, UserReviewPRs
 
-router = APIRouter(tags=["Users"])
+router = APIRouter()
 
 
 @router.post(
     "/users/setIsActive",
     status_code=status.HTTP_200_OK,
     response_model=UserGen,
+    tags=["Users"],
 )
 async def set_is_active(
     payload: SetIsActiveRequest,
@@ -36,10 +37,7 @@ async def set_is_active(
     return {"user": user}
 
 
-@router.get(
-    "/users/getReview",
-    response_model=UserReviewPRs,
-)
+@router.get("/users/getReview", response_model=UserReviewPRs, tags=["Users"])
 async def get_user_review_prs(
     user_id: str,
     service: UserServiceDep,
